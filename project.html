@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Project Details</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html">Home</a>
+  <a href="gallery.html">3D Gallery</a>
+  <a href="ar.html">AR</a>
+  <a href="vr.html">VR</a>
+  <a href="code-visual.html">Code</a>
+  <a href="about.html">About</a>
+  <a href="admin.html">Admin</a>
+</nav>
+
+<section class="card" id="project"></section>
+
+<script type="module">
+import { students } from "./js/data.js";
+
+const id = localStorage.getItem("studentId");
+const s = students.find(stu => stu.id == id);
+
+document.getElementById("project").innerHTML = `
+  <h2>${s.projectTitle}</h2>
+  <p><strong>Student:</strong> ${s.name}</p>
+  <p><strong>Course:</strong> ${s.course}</p>
+  <p><strong>University:</strong> ${s.university}</p>
+  <p><strong>Year:</strong> ${s.year}</p>
+  <p><strong>Role:</strong> ${s.role}</p>
+
+  <h3>Description</h3>
+  <p>${s.description}</p>
+
+  <h3>Technologies Used</h3>
+  <ul>${s.technologies.map(t => `<li>${t}</li>`).join("")}</ul>
+
+  <h3>Key Features</h3>
+  <ul>${s.features.map(f => `<li>${f}</li>`).join("")}</ul>
+`;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AR Object Video Overlay</title>
+
+  <!-- TensorFlow -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+<link rel="stylesheet" href="css/ar.css">
+  
+</head>
+
+<body>
+
+<div id="container">
+  <video id="camera" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
+
+  <!-- AR Overlay Video -->
+  <video id="overlayVideo" muted loop>
+    <source src="Arcade.mp4" type="video/mp4">
+  </video>
+</div>
+
+<script>
+const camera = document.getElementById("camera");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const overlayVideo = document.getElementById("overlayVideo");
+
+let model;
+let detectedObject = "person"; // 👈 change object here
+
+async function setupCamera() {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  camera.srcObject = stream;
+
+  return new Promise(resolve => {
+    camera.onloadedmetadata = () => {
+      canvas.width = camera.videoWidth;
+      canvas.height = camera.videoHeight;
+      resolve();
+    };
+  });
+}
+
+async function loadModel() {
+  model = await cocoSsd.load();
+}
+
+async function detectFrame() {
+  const predictions = await model.detect(camera);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  let found = false;
+
+  predictions.forEach(prediction => {
+    if (prediction.class === detectedObject && prediction.score > 0.6) {
+
+      const [x, y, width, height] = prediction.bbox;
+
+      // Draw AR bounding box
+      ctx.strokeStyle = "lime";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x, y, width, height);
+
+      ctx.font = "18px Arial";
+      ctx.fillStyle = "lime";
+      ctx.fillText(prediction.class, x, y - 10);
+
+      // Position overlay video ABOVE object
+    overlayVideo.classList.add("show");
+overlayVideo.classList.remove("show");
+      overlayVideo.style.display = "block";
+
+      if (overlayVideo.paused) {
+        overlayVideo.play();
+      }
+
+      found = true;
+    }
+  });
+
+  if (!found) {
+    overlayVideo.style.display = "none";
+    overlayVideo.pause();
+    overlayVideo.currentTime = 0;
+  }
+
+  requestAnimationFrame(detectFrame);
+}
+
+async function init() {
+  await setupCamera();
+  await loadModel();
+  detectFrame();
+}
+
+init();
+</script>
+
+</body>
+</html>
